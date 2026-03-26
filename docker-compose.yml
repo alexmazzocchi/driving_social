@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:15
+    container_name: driving_social_db
+    environment:
+      POSTGRES_DB: drivingsocial
+      POSTGRES_USER: drivingsocial
+      POSTGRES_PASSWORD: changeme_in_production
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app_network
+
+  backend:
+    build: ./backend
+    container_name: driving_social_backend
+    environment:
+      DATABASE_URL: postgresql://drivingsocial:changeme_in_production@db:5432/drivingsocial
+      SECRET_KEY: very_secure_secret_key
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    networks:
+      - app_network
+
+  web:
+    build: ./web
+    container_name: driving_social_web
+    ports:
+      - "3000:3000"
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
